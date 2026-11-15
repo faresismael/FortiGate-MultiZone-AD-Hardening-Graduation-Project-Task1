@@ -4,7 +4,7 @@
 
 
 
-## 📌 Overview
+## 📌 Project Overview
 **Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project[cite: 13]. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **13 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints[cite: 8, 9, 10, 13].
 
 ---
