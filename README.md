@@ -1,10 +1,5 @@
 # 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)
 
-![GNS3](https://img.shields.io/badge/Simulator-GNS3-blue?style=flat-square)
-![FortiGate](https://img.shields.io/badge/Firewall-FortiGate%20v7.4.12-red?style=flat-square)
-![Windows Server](https://img.shields.io/badge/OS-Windows%20Server%202025-0078D6?style=flat-square)
-![Ubuntu](https://img.shields.io/badge/Client-Ubuntu%20Linux-E95420?style=flat-square)
-![Windows 10](https://img.shields.io/badge/Client-Windows%2010%20Pro-00ADEF?style=flat-square)
 
 ## 📌 Project Overview
 This repository documents **Task 1** of our Electronics & Communications Engineering Graduation Project (**Automated Security Response System for Enterprise Networks**). This foundational phase builds and hardens an enterprise-grade, segmented network architecture using **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** and governed internally by a **Windows Server 2025 Active Directory Domain Controller (`faresismael.com`)**.
@@ -127,6 +122,6 @@ All security controls were practically tested on domain-joined clients to guaran
 
 ## Author
 
-**Fares Ismael** | HCIA-Security
+**Fares Ismael** | Sphinx University
 
 [LinkedIn](https://www.linkedin.com/in/fares-ismael-058976425/)
