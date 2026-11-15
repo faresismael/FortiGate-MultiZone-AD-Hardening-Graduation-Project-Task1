@@ -1,6 +1,7 @@
 # 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)
 
 
+
 ## 📌 Project Overview
 This repository documents **Task 1** of our Electronics & Communications Engineering Graduation Project (**Automated Security Response System for Enterprise Networks**). This foundational phase builds and hardens an enterprise-grade, segmented network architecture using **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** and governed internally by a **Windows Server 2025 Active Directory Domain Controller (`faresismael.com`)**.
 
