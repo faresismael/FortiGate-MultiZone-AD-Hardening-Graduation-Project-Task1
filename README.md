@@ -1,11 +1,10 @@
 
-# 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)        
-
-
+# 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)
 
 
 ## 📌 Project Overview
-**Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project[cite: 13]. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **13 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints[cite: 8, 9, 10, 13].
+**Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **13 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints.
+
 
 ---
 
@@ -13,20 +12,20 @@
 
 ![GNS3 Multi-Zone Topology](screenshots/01-gns3-topology.png)
 
-The infrastructure is segmented into three isolated security zones governed by **FortiGate 7.4.12**[cite: 9]:
+The infrastructure is segmented into three isolated security zones governed by **FortiGate 7.4.12**:
 
 | Security Zone | FortiGate Interface | Gateway IP | Connected Nodes | Endpoint IPs | Security Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **External Zone (WAN)** | `Port1` | DHCP / NAT | `Cloud1` (`eth1`)[cite: 9] | External / ISP | Untrusted external network & internet access |
-| **DMZ Zone** | `Port2` | `172.16.10.1/24`[cite: 9] | `Switch2` ➔ `WindowsServer2025V2-1`[cite: 9] | `172.16.10.30`[cite: 9] | Core Infrastructure & Enterprise Services (AD, DNS, Web, FTP, SMB)[cite: 8, 9] |
-| **Trust Zone (LAN)** | `Port3` | `192.168.20.1/24`[cite: 9] | `Switch1` ➔ `Ubuntu64` & `Windows10x64`[cite: 9] | `.15` (Ubuntu)<br>`.25` (Win10)[cite: 9] | Hardened internal corporate workstations (Windows & Linux)[cite: 9] |
+| **External Zone (WAN)** | `Port1` | DHCP / NAT | `Cloud1` (`eth1`) | External / ISP | Untrusted external network & internet access |
+| **DMZ Zone** | `Port2` | `172.16.10.1/24` | `Switch2` ➔ `WindowsServer2025V2-1` | `172.16.10.30` | Core Infrastructure & Enterprise Services (AD, DNS, Web, FTP, SMB) |
+| **Trust Zone (LAN)** | `Port3` | `192.168.20.1/24` | `Switch1` ➔ `Ubuntu64` & `Windows10x64` | `.15` (Ubuntu)<br>`.25` (Win10) | Hardened internal corporate workstations (Windows & Linux) |
 
 ---
 
 ## 🔥 FortiGate NGFW: Interfaces, Firewall Policies & Virtual IPs
 
 ### 1. Zone Interfaces & Traffic Segmentation
-Each FortiGate interface is assigned to an explicit security zone (`External`, `DMZ`, `Trust`) to prevent unauthorized lateral movement and enforce stateful packet inspection between segments[cite: 9].
+Each FortiGate interface is assigned to an explicit security zone (`External`, `DMZ`, `Trust`) to prevent unauthorized lateral movement and enforce stateful packet inspection between segments.
 
 ![FortiGate Interfaces](screenshots/02-fortigate-interfaces.png)
 
@@ -35,10 +34,10 @@ Strict access control policies regulate all inter-zone communication:
 
 | Policy Name | Incoming Interface | Outgoing Interface | Source | Destination | Service | Action & NAT |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`Trust_to_Internet`** | `Port3` (Trust)[cite: 9] | `Port1` (External)[cite: 9] | `192.168.20.0/24` | `all` | `ALL` | **ACCEPT** (SNAT Enabled) |
-| **`DMZ_to_Internet`** | `Port2` (DMZ)[cite: 9] | `Port1` (External)[cite: 9] | `172.16.10.0/24` | `all` | `ALL` | **ACCEPT** (SNAT Enabled) |
-| **`Trust_to_DMZ_Services`** | `Port3` (Trust)[cite: 9] | `Port2` (DMZ)[cite: 9] | `192.168.20.0/24` | `172.16.10.30`[cite: 9] | `DNS, LDAP, Kerberos, SMB, HTTP, FTP` | **ACCEPT** (No NAT - Internal Routing) |
-| **`WAN_to_DMZ_VIP`** | `Port1` (External)[cite: 9] | `Port2` (DMZ)[cite: 9] | `all` | `DMZ_Web_VIP` / `DMZ_FTP_VIP` | `HTTP, HTTPS, FTP` | **ACCEPT** (DNAT via Virtual IP) |
+| **`Trust_to_Internet`** | `Port3` (Trust) | `Port1` (External) | `192.168.20.0/24` | `all` | `ALL` | **ACCEPT** (SNAT Enabled) |
+| **`DMZ_to_Internet`** | `Port2` (DMZ) | `Port1` (External) | `172.16.10.0/24` | `all` | `ALL` | **ACCEPT** (SNAT Enabled) |
+| **`Trust_to_DMZ_Services`** | `Port3` (Trust) | `Port2` (DMZ) | `192.168.20.0/24` | `172.16.10.30` | `DNS, LDAP, Kerberos, SMB, HTTP, FTP` | **ACCEPT** (No NAT - Internal Routing) |
+| **`WAN_to_DMZ_VIP`** | `Port1` (External) | `Port2` (DMZ) | `all` | `DMZ_Web_VIP` / `DMZ_FTP_VIP` | `HTTP, HTTPS, FTP` | **ACCEPT** (DNAT via Virtual IP) |
 
 ![FortiGate Firewall Policies](screenshots/03-fortigate-policies.png)
 
@@ -47,8 +46,8 @@ To securely publish DMZ-hosted services to external clients without exposing the
 
 | VIP Name | External Interface | External IP / Port | Mapped Internal IP | Mapped Port | Published Service |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`VIP_DMZ_Web_Server`** | `Port1` (WAN)[cite: 9] | `Port1 IP : 80 / 443` | `172.16.10.30`[cite: 9] | `80 / 443` | Enterprise Web Server (IIS)[cite: 8] |
-| **`VIP_DMZ_FTP_Server`** | `Port1` (WAN)[cite: 9] | `Port1 IP : 21` | `172.16.10.30`[cite: 9] | `21` | Enterprise FTP Server[cite: 8] |
+| **`VIP_DMZ_Web_Server`** | `Port1` (WAN) | `Port1 IP : 80 / 443` | `172.16.10.30` | `80 / 443` | Enterprise Web Server (IIS) |
+| **`VIP_DMZ_FTP_Server`** | `Port1` (WAN) | `Port1 IP : 21` | `172.16.10.30` | `21` | Enterprise FTP Server |
 
 ![FortiGate Virtual IPs](screenshots/04-fortigate-virtual-ips.png)
 
@@ -56,12 +55,12 @@ To securely publish DMZ-hosted services to external clients without exposing the
 
 ## 🖥️ Hosted Enterprise Services (DMZ Zone)
 
-The DMZ server (`WindowsServer2025V2-1` — `172.16.10.30`) hosts core organizational infrastructure and network services accessible under controlled firewall policies[cite: 8, 9]:
+The DMZ server (`WindowsServer2025V2-1` — `172.16.10.30`) hosts core organizational infrastructure and network services accessible under controlled firewall policies:
 
-* **Active Directory Domain Services (AD DS) & DNS (`faresismael.com`):** Centralized identity management, Kerberos authentication, internal name resolution, and Group Policy distribution[cite: 4, 5, 9].
-* **Web Server (IIS — HTTP/HTTPS):** Hosts the internal/external corporate web portal reachable from both Trust workstations and external clients via FortiGate VIP[cite: 8].
-* **FTP Server (File Transfer Protocol):** Configured with user authentication and directory isolation for secure file uploads/downloads across zones[cite: 8].
-* **File Sharing Server (SMB / Network Shares):** Configured centralized department shared folders protected with granular **NTFS** and **Share-level permissions** so only authorized domain users can read/write corporate files[cite: 8].
+- **Active Directory Domain Services (AD DS) & DNS (`faresismael.com`):** Centralized identity management, Kerberos authentication, internal name resolution, and Group Policy distribution.
+- **Web Server (IIS — HTTP/HTTPS):** Hosts the internal/external corporate web portal reachable from both Trust workstations and external clients via FortiGate VIP.
+- **FTP Server (File Transfer Protocol):** Configured with user authentication and directory isolation for secure file uploads/downloads across zones.
+- **File Sharing Server (SMB / Network Shares):** Configured centralized department shared folders protected with granular **NTFS** and **Share-level permissions** so only authorized domain users can read/write corporate files.
 
 ![DMZ Enterprise Services](screenshots/05-dmz-web-ftp-fileshare.png)
 
@@ -69,18 +68,18 @@ The DMZ server (`WindowsServer2025V2-1` — `172.16.10.30`) hosts core organizat
 
 ## 🏢 Active Directory Hierarchy & Privilege Separation (RBAC)
 
-Within **`faresismael.com`**, objects are organized under the root container **`ECE_Grad_Project`** across three dedicated Organizational Units (OUs)[cite: 3, 4, 5]:
+Within **`faresismael.com`**, objects are organized under the root container **`ECE_Grad_Project`** across three dedicated Organizational Units (OUs):
 
 ![Active Directory OU Structure](screenshots/06-ad-ou-structure.png)
 
 1. **`Project_Team` (Standard Users):** Contains team/employee accounts (`fares`, `mina`, etc.) governed by strict endpoint restrictions.
-2. **`Project_Computers` (Workstations):** Contains domain-joined client machines (`Windows10x64`)[cite: 9].
+2. **`Project_Computers` (Workstations):** Contains domain-joined client machines (`Windows10x64`).
 3. **`IT_Department` (Technical Support):** Contains `IT_Support_Group` and dedicated IT admin accounts (`Fares-IT`, `ROIT`).
 
 ### 🔐 Least-Privilege Administration (No `Domain Admins` Over-Privileging)
 To prevent privilege escalation and protect the Domain Controller, IT support accounts are explicitly excluded from `Domain Admins` and granted scoped permissions via two mechanisms:
-* **Delegation of Control:** Delegated authority exclusively on `Project_Team` OU, allowing `IT_Support_Group` to inspect user details (`Read all user information`) and reset employee passwords without accessing the Domain Controller[cite: 1, 2].
-* **Restricted Groups (`GPO_12`):** Elevated `IT_Support_Group` to **Local Administrator** solely on `Project_Computers` workstations (while preserving `Domain Admins`), enabling full local maintenance without domain-level control[cite: 3, 4, 5].
+- **Delegation of Control:** Delegated authority exclusively on `Project_Team` OU, allowing `IT_Support_Group` to inspect user details (`Read all user information`) and reset employee passwords without accessing the Domain Controller.
+- **Restricted Groups (`GPO_12`):** Elevated `IT_Support_Group` to **Local Administrator** solely on `Project_Computers` workstations (while preserving `Domain Admins`), enabling full local maintenance without domain-level control.
 
 | Delegation of Control & Account Lockout | Restricted Groups (`Local Administrators`) |
 | :---: | :---: |
@@ -109,9 +108,9 @@ To prevent privilege escalation and protect the Domain Controller, IT support ac
 | :--- | :--- | :--- | :--- |
 | **`GPO_09_Logon_Security_Banner`** | `Project_Computers` | Computer | Displays an authorized-use legal warning banner prior to Windows logon. |
 | **`GPO_10_Disk_Quota_5GB`** | `Project_Computers` | Computer | Enforces a strict **5 GB per-user NTFS disk quota** to prevent storage exhaustion. |
-| **`GPO_11_BitLocker_Encryption`** | `Project_Computers` | Computer | Configures BitLocker OS drive encryption policy (with non-TPM support for virtualized environments)[cite: 6]. |
-| **`GPO_12_IT_Local_Admin`** | `Project_Computers` | Computer | Grants `IT_Support_Group` Local Administrator rights on workstations via `Restricted Groups`[cite: 5]. |
-| **`Account Lockout Policy`** | `Default Domain Policy`[cite: 10] | Domain | Protects against brute-force attacks by locking accounts for **30 minutes** after **5 invalid logon attempts**[cite: 7, 10]. |
+| **`GPO_11_BitLocker_Encryption`** | `Project_Computers` | Computer | Configures BitLocker OS drive encryption policy (with non-TPM support for virtualized environments). |
+| **`GPO_12_IT_Local_Admin`** | `Project_Computers` | Computer | Grants `IT_Support_Group` Local Administrator rights on workstations via `Restricted Groups`. |
+| **`Account Lockout Policy`** | `Default Domain Policy` | Domain | Protects against brute-force attacks by locking accounts for **30 minutes** after **5 invalid logon attempts**. |
 
 ---
 
@@ -121,13 +120,13 @@ All firewall policies, Virtual IPs, DMZ services, and GPO restrictions were vali
 
 1. **Standard User Endpoint Hardening (`Project_Team`):**
    * Confirmed immediate access denial when attempting to launch `CMD`, `Control Panel`, `PowerShell`, `Task Manager`, or open **CD/DVD** and **USB** drives.
-   * Verified **BitLocker** policy application (`GPO_11`) in Control Panel and **Account Lockout** enforcement after 5 failed password attempts[cite: 6, 10].
+   * Verified **BitLocker** policy application (`GPO_11`) in Control Panel and **Account Lockout** enforcement after 5 failed password attempts.
 2. **IT Support Elevation (`Fares-IT`):**
-   * Logged into `Windows10x64` (`192.168.20.25`) using `Fares-IT`; verified bypass of user restrictions and full Local Admin access (`CMD`, `Control Panel`, `gpresult /h`) without Domain Admin rights[cite: 5, 9].
+   * Logged into `Windows10x64` (`192.168.20.25`) using `Fares-IT`; verified bypass of user restrictions and full Local Admin access (`CMD`, `Control Panel`, `gpresult /h`) without Domain Admin rights.
 3. **DMZ Services & FortiGate VIP Verification:**
-   * Verified internal access from Trust clients to the **Web Server**, **FTP Server**, and **SMB File Share** (`\\172.16.10.30`), as well as external access through FortiGate **Virtual IP (VIP)** port forwarding[cite: 8, 9].
+   * Verified internal access from Trust clients to the **Web Server**, **FTP Server**, and **SMB File Share** (`\\172.16.10.30`), as well as external access through FortiGate **Virtual IP (VIP)** port forwarding.
 4. **Ubuntu Linux Client (`Ubuntu64`):**
-   * Verified IP configuration (`192.168.20.15`), gateway connectivity (`192.168.20.1`), DMZ service access (`172.16.10.30`), and external internet access via FortiGate SNAT[cite: 9].
+   * Verified IP configuration (`192.168.20.15`), gateway connectivity (`192.168.20.1`), DMZ service access (`172.16.10.30`), and external internet access via FortiGate SNAT.
 
 | System Tools Blocked (`CMD` / `Control Panel`) | Removable Media Blocked (`DVD` / `USB`) |
 | :---: | :---: |
@@ -144,21 +143,21 @@ All firewall policies, Virtual IPs, DMZ services, and GPO restrictions were vali
 ---
 
 ## 🛠️ Tech Stack & Tools
-* **Network Simulation:** GNS3 v2.2.52 + GNS3 VM[cite: 9]
-* **Next-Gen Firewall:** Fortinet FortiGate VM (v7.4.12)[cite: 9]
-* **Server OS & Services:** Windows Server 2025 (AD DS, DNS, GPO, IIS Web, FTP, SMB File Sharing)[cite: 8, 9]
-* **Client OS:** Windows 10 Pro (x64) & Ubuntu Linux (x64)[cite: 9]
+- **Network Simulation:** GNS3 v2.2.52 + GNS3 VM
+- **Next-Gen Firewall:** Fortinet FortiGate VM (v7.4.12)
+- **Server OS & Services:** Windows Server 2025 (AD DS, DNS, GPO, IIS Web, FTP, SMB File Sharing)
+- **Client OS:** Windows 10 Pro (x64) & Ubuntu Linux (x64)
 
 ---
 
 ## Future Enhancements
 
-* **Management VLAN (VLAN 40)** — A dedicated out-of-band VLAN for secure device management (SSH to firewalls/switches), isolated from user and server data traffic and restricted by ACLs to an admin host[cite: 11].
-* **SIEM/XDR & MITRE ATT&CK Integration (Wazuh + Sysmon)** — Deploying Wazuh agents and Sysmon across Windows and Linux endpoints for centralized log ingestion, real-time alerting, and MITRE ATT&CK technique mapping[cite: 13].
-* **AI Risk Scoring Engine** — Building an intelligent risk analysis module that evaluates incoming SIEM alerts and assigns dynamic severity scores (0–100) to prioritize critical threats[cite: 13].
-* **Automated Incident Response & SOAR (Ansible & Python)** — Automating containment playbooks to trigger zero-touch attacker IP blocking on FortiGate/iptables, endpoint quarantine, and automated recovery[cite: 13].
-* **Software-Defined Networking (SDN)** — Integrating Ryu Controller and Open vSwitch (OVS) for programmable flow-level traffic isolation[cite: 13].
-* **Red Team Attack Simulation (Kali Linux)** — Validating the full detection-to-recovery pipeline (`Attack → Detect → Alert → Automate → Isolate → Recover`) using Hydra, Nmap, and Metasploit[cite: 13].
+- **Management VLAN (VLAN 40)** — A dedicated out-of-band VLAN for secure device management (SSH to firewalls/switches), isolated from user and server data traffic and restricted by ACLs to an admin host.
+- **SIEM/XDR & MITRE ATT&CK Integration (Wazuh + Sysmon)** — Deploying Wazuh agents and Sysmon across Windows and Linux endpoints for centralized log ingestion, real-time alerting, and MITRE ATT&CK technique mapping.
+- **AI Risk Scoring Engine** — Building an intelligent risk analysis module that evaluates incoming SIEM alerts and assigns dynamic severity scores (0–100) to prioritize critical threats.
+- **Automated Incident Response & SOAR (Ansible & Python)** — Automating containment playbooks to trigger zero-touch attacker IP blocking on FortiGate/iptables, endpoint quarantine, and automated recovery.
+- **Software-Defined Networking (SDN)** — Integrating Ryu Controller and Open vSwitch (OVS) for programmable flow-level traffic isolation.
+- **Red Team Attack Simulation (Kali Linux)** — Validating the full detection-to-recovery pipeline (`Attack → Detect → Alert → Automate → Isolate → Recover`) using Hydra, Nmap, and Metasploit.
 
 ---
 
