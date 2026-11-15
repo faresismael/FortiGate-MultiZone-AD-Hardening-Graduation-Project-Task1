@@ -1,10 +1,7 @@
-
 # 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)
-
 
 ## 📌 Project Overview
 **Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **13 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints.
-
 
 ---
 
@@ -116,18 +113,23 @@ To prevent privilege escalation and protect the Domain Controller, IT support ac
 
 ## ✅ End-to-End Testing & Verification
 
-All firewall policies, Virtual IPs, DMZ services, and GPO restrictions were validated across both Windows and Linux clients:
+All firewall rules, Virtual IPs, DMZ network services, and GPO restrictions were tested and verified end-to-end across both Windows and Linux clients:
 
 1. **Standard User Endpoint Hardening (`Project_Team`):**
    * Confirmed immediate access denial when attempting to launch `CMD`, `Control Panel`, `PowerShell`, `Task Manager`, or open **CD/DVD** and **USB** drives.
    * Verified **BitLocker** policy application (`GPO_11`) in Control Panel and **Account Lockout** enforcement after 5 failed password attempts.
 2. **IT Support Elevation (`Fares-IT`):**
    * Logged into `Windows10x64` (`192.168.20.25`) using `Fares-IT`; verified bypass of user restrictions and full Local Admin access (`CMD`, `Control Panel`, `gpresult /h`) without Domain Admin rights.
-3. **DMZ Services & FortiGate VIP Verification:**
-   * Verified internal access from Trust clients to the **Web Server**, **FTP Server**, and **SMB File Share** (`\\172.16.10.30`), as well as external access through FortiGate **Virtual IP (VIP)** port forwarding.
-4. **Ubuntu Linux Client (`Ubuntu64`):**
-   * Verified IP configuration (`192.168.20.15`), gateway connectivity (`192.168.20.1`), DMZ service access (`172.16.10.30`), and external internet access via FortiGate SNAT.
+3. **Web Server (IIS) Verification:**
+   * Successfully accessed the hosted web portal from Trust workstations (`http://172.16.10.30`) and validated external reachability through FortiGate **Virtual IP (VIP)** port forwarding on Port 80.
+4. **FTP Server Verification:**
+   * Authenticated successfully against the DMZ FTP service (`ftp://172.16.10.30` and via external VIP) and verified directory listing and file transfer operations across firewall zones.
+5. **SMB File Sharing Verification:**
+   * Accessed the network shared directory (`\\172.16.10.30`) from domain-joined clients (`Windows10x64`) and verified read/write permissions enforced via NTFS and Share ACLs.
+6. **Ubuntu Linux Client (`Ubuntu64`):**
+   * Verified IP configuration (`192.168.20.15`), gateway connectivity (`192.168.20.1`), DMZ service reachability (`172.16.10.30`), and external internet access via FortiGate SNAT.
 
+### A. Endpoint Hardening & RBAC Verification
 | System Tools Blocked (`CMD` / `Control Panel`) | Removable Media Blocked (`DVD` / `USB`) |
 | :---: | :---: |
 | ![System Tools Blocked](screenshots/10-win10-block-cmd-controlpanel.png) | ![DVD and USB Blocked](screenshots/11-win10-block-dvd-usb.png) |
@@ -136,9 +138,14 @@ All firewall policies, Virtual IPs, DMZ services, and GPO restrictions were vali
 | :---: | :---: |
 | ![BitLocker Verification](screenshots/12-bitlocker-verification.png) | ![IT Admin Access](screenshots/13-win10-it-admin-access.png) |
 
-| DMZ Services & VIP Testing (`Web` / `FTP` / `SMB`) | Ubuntu Linux Connectivity (`192.168.20.15`) |
+### B. DMZ Services (Web, FTP, File Sharing) & Linux Client Verification
+| Web Server (`IIS` HTTP/VIP) Success | FTP Server Authentication & Transfer Success |
 | :---: | :---: |
-| ![Services Client Test](screenshots/14-services-client-test.png) | ![Ubuntu Connectivity](screenshots/15-ubuntu-connectivity.png) |
+| ![Web Server Verification](screenshots/14-web-server-test.png) | ![FTP Server Verification](screenshots/15-ftp-server-test.png) |
+
+| SMB File Sharing (`\\172.16.10.30`) Success | Ubuntu Linux Connectivity (`192.168.20.15`) |
+| :---: | :---: |
+| ![SMB File Sharing Verification](screenshots/16-smb-fileshare-test.png) | ![Ubuntu Connectivity](screenshots/17-ubuntu-connectivity.png) |
 
 ---
 
