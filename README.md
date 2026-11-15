@@ -19,24 +19,31 @@ The infrastructure is segmented into three isolated security zones governed by *
 
 ---
 
-## 🔥 FortiGate NGFW: Interfaces, Firewall Policies & Virtual IPs
+## 🔥 FortiGate NGFW: Firewall Policies & Virtual IPs
 
-### 1. Zone Interfaces & Traffic Segmentation
-Each FortiGate interface is assigned to an explicit security zone (`External`, `DMZ`, `Trust`) to prevent unauthorized lateral movement and enforce stateful packet inspection between segments.
-
-![FortiGate Interfaces](screenshots/02-fortigate-interfaces.png)
-
-### 2. Firewall Policies & NAT Rules
-Strict access control policies regulate all inter-zone communication:
+### 1. Firewall Policies & NAT Rules
+Strict stateful access control policies regulate all inter-zone communication across `WAN (port1)`, `DMZ (port2)`, and `LAN (port3)` interfaces (enforcing a default **Implicit Deny** for any unmatched traffic):
 
 | Policy Name | Incoming Interface | Outgoing Interface | Source | Destination | Service | Action & NAT |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`Trust_to_Internet`** | `Port3` (Trust) | `Port1` (External) | `192.168.20.0/24` | `all` | `ALL` | **ACCEPT** (SNAT Enabled) |
-| **`DMZ_to_Internet`** | `Port2` (DMZ) | `Port1` (External) | `172.16.10.0/24` | `all` | `ALL` | **ACCEPT** (SNAT Enabled) |
-| **`Trust_to_DMZ_Services`** | `Port3` (Trust) | `Port2` (DMZ) | `192.168.20.0/24` | `172.16.10.30` | `DNS, LDAP, Kerberos, SMB, HTTP, FTP` | **ACCEPT** (No NAT - Internal Routing) |
-| **`WAN_to_DMZ_VIP`** | `Port1` (External) | `Port2` (DMZ) | `all` | `DMZ_Web_VIP` / `DMZ_FTP_VIP` | `HTTP, HTTPS, FTP` | **ACCEPT** (DNAT via Virtual IP) |
+| **`LAN_to_Internet`** | `LAN (port3)` | `WAN (port1)` | `LAN_Subnet` (`192.168.20.0/24`) | `all` | `ALL` | **ACCEPT** (NAT Enabled) |
+| **`Ubuntu_to_DMZ`** | `LAN (port3)` | `DMZ (port2)` | `Ubuntu64` (`192.168.20.15`) | `DC_DMZ` (`172.16.10.30`) | `DNS, FTP, SMB` | **ACCEPT** (NAT Disabled) |
+| **`To_Internet`** | `DMZ (port2)` | `WAN (port1)` | `DC_DMZ` (`172.16.10.30`) | `all` | `ALL` | **ACCEPT** (NAT Enabled) |
+| **`PC2 to DMZ`** | `LAN (port3)` | `DMZ (port2)` | `PC2_Win10` (`192.168.20.25`) | `DC_DMZ` (`172.16.10.30`) | `Windows AD, NTP, HTTP, FTP, SMB` | **ACCEPT** (NAT Disabled) |
+| **`EXT to DMZ`** | `WAN (port1)` | `DMZ (port2)` | `IPS TEAM` | `External to DMZ` (VIP) | `HTTP` | **ACCEPT** (DNAT via Virtual IP) |
+| **`Implicit Deny`** | `any` | `any` | `all` | `all` | `ALL` | **DENY** (Default Zero-Trust Rule) |
 
-![FortiGate Firewall Policies](screenshots/03-fortigate-policies.png)
+![FortiGate Firewall Policies](screenshots/02-fortigate-policies.png)
+
+### 2. Virtual IP (VIP / DNAT Port Forwarding)
+To securely publish the DMZ-hosted Web Server to external clients without exposing the internal DMZ subnet (`172.16.10.0/24`), a **FortiGate Virtual IP (Static NAT)** was configured on `WAN (port1)`:
+
+| VIP Name | Interface | Mapped From (External) | Mapped To (Internal DMZ) | Published Service |
+| :--- | :--- | :--- | :--- | :--- |
+| **`External to DMZ`** | `WAN (port1)` | `192.168.1.5` (`TCP: 80`) | `172.16.10.30` (`TCP: 80`) | Enterprise Web Server (IIS) |
+
+![FortiGate Virtual IPs](screenshots/03-fortigate-virtual-ips.png)
+
 
 ### 3. Virtual IPs (VIP / DNAT Port Forwarding)
 To securely publish DMZ-hosted services to external clients without exposing the internal DMZ subnet (`172.16.10.0/24`), **FortiGate Virtual IPs (Static NAT / Port Forwarding)** were configured on `Port1`:
