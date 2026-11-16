@@ -1,7 +1,7 @@
 # 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)
 
 ## 📌 Project Overview
-**Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **14 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints.
+**Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IP (DNAT)** port forwarding, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **14 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints.
 
 ---
 
@@ -13,7 +13,7 @@ The infrastructure is segmented into three isolated security zones governed by *
 
 | Security Zone | FortiGate Interface | Gateway IP | Connected Nodes | Endpoint IPs | Security Role |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **External Zone (WAN)** | `Port1` | DHCP / NAT | `Cloud1` (`eth1`) | External / ISP | Untrusted external network & internet access |
+| **External Zone (WAN)** | `Port1` | `192.168.1.5` (DHCP/NAT) | `Cloud1` (`eth1`) | External / ISP | Untrusted external network & internet access |
 | **DMZ Zone** | `Port2` | `172.16.10.1/24` | `Switch2` ➔ `WindowsServer2025V2-1` | `172.16.10.30` | Core Infrastructure & Enterprise Services (AD, DNS, Web, FTP, SMB) |
 | **Trust Zone (LAN)** | `Port3` | `192.168.20.1/24` | `Switch1` ➔ `Ubuntu64` & `Windows10x64` | `.15` (Ubuntu)<br>`.25` (Win10) | Hardened internal corporate workstations (Windows & Linux) |
 
@@ -44,29 +44,16 @@ To securely publish the DMZ-hosted Web Server to external clients without exposi
 
 ![FortiGate Virtual IPs](screenshots/03-fortigate-virtual-ips.png)
 
-
-### 3. Virtual IPs (VIP / DNAT Port Forwarding)
-To securely publish DMZ-hosted services to external clients without exposing the internal DMZ subnet (`172.16.10.0/24`), **FortiGate Virtual IPs (Static NAT / Port Forwarding)** were configured on `Port1`:
-
-| VIP Name | External Interface | External IP / Port | Mapped Internal IP | Mapped Port | Published Service |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`VIP_DMZ_Web_Server`** | `Port1` (WAN) | `Port1 IP : 80 / 443` | `172.16.10.30` | `80 / 443` | Enterprise Web Server (IIS) |
-| **`VIP_DMZ_FTP_Server`** | `Port1` (WAN) | `Port1 IP : 21` | `172.16.10.30` | `21` | Enterprise FTP Server |
-
-![FortiGate Virtual IPs](screenshots/04-fortigate-virtual-ips.png)
-
 ---
 
 ## 🖥️ Hosted Enterprise Services (DMZ Zone)
 
 The DMZ server (`WindowsServer2025V2-1` — `172.16.10.30`) hosts core organizational infrastructure and network services accessible under controlled firewall policies:
 
-- **Active Directory Domain Services (AD DS) & DNS (`faresismael.com`):** Centralized identity management, Kerberos authentication, internal name resolution, and Group Policy distribution.
-- **Web Server (IIS — HTTP/HTTPS):** Hosts the internal/external corporate web portal reachable from both Trust workstations and external clients via FortiGate VIP.
-- **FTP Server (File Transfer Protocol):** Configured with user authentication and directory isolation for secure file uploads/downloads across zones.
-- **File Sharing Server (SMB / Network Shares):** Configured centralized department shared folders protected with granular **NTFS** and **Share-level permissions** so only authorized domain users can read/write corporate files.
-
-![DMZ Enterprise Services](screenshots/05-dmz-web-ftp-fileshare.png)
+- **Active Directory Domain Services (AD DS) & DNS (`faresismael.com`):** Centralized identity management, Kerberos authentication, internal name resolution (`ftp.dns.local`), and Group Policy distribution.
+- **Web Server (IIS — HTTP):** Hosts the corporate web portal reachable from internal Trust workstations (`http://172.16.10.30`) and external clients via FortiGate Virtual IP (`192.168.1.5:80`).
+- **FTP Server (File Transfer Protocol):** Configured with authentication and directory isolation, verified directly from the Ubuntu Linux workstation (`ftp://ftp.dns.local`).
+- **File Sharing Server (SMB / Network Shares):** Configured centralized department shared folders (`File_Share`) protected with granular **NTFS** and **Share-level permissions**, verified across both Windows 10 and Ubuntu Linux clients.
 
 ---
 
@@ -90,6 +77,7 @@ To prevent privilege escalation and protect the Domain Controller, non-domain-ad
 | Account Lockout Policy (`Default Domain Policy`) | Restricted Groups (`Local Administrators`) |
 | :---: | :---: |
 | ![Account Lockout Policy](screenshots/06-account-lockout.png) | ![Restricted Groups Configuration](screenshots/07-it-restricted-groups.png) |
+
 ---
 
 ## 📜 Security Hardening Policies (13 GPOs + Domain Lockout)
@@ -119,44 +107,44 @@ To prevent privilege escalation and protect the Domain Controller, non-domain-ad
 | **`GPO_11_BitLocker_Encryption`** | `Project_Computers` | Computer | Configures BitLocker OS drive encryption policy (with non-TPM support for virtualized environments). |
 | **`GPO_12_IT_Local_Admin`** | `Project_Computers` | Computer | Grants `IT_Support_Group` and `Coders_Group` Local Administrator rights on workstations via `Restricted Groups`. |
 | **`Account Lockout Policy`** | `Default Domain Policy` | Domain | Protects against brute-force attacks by locking accounts for **30 minutes** after **5 invalid logon attempts**. |
----
 
+---
 
 ## ✅ End-to-End Testing & Verification
 
-All firewall rules, Virtual IPs, DMZ network services, and GPO restrictions were tested and verified end-to-end across both Windows and Linux clients:
+All firewall rules, Virtual IPs, DMZ network services, outbound NAT, and GPO restrictions were validated end-to-end across both Windows and Linux clients:
 
-1. **Standard User Endpoint Hardening (`Project_Team`):**
-   * Confirmed immediate access denial when attempting to launch `CMD`, `Control Panel`, `PowerShell`, `Task Manager`, or open **CD/DVD** and **USB** drives.
-   * Verified **BitLocker** policy application (`GPO_11`) in Control Panel and **Account Lockout** enforcement after 5 failed password attempts.
+1. **Pre-Logon Banner & Standard User Restrictions (`Project_Team`):**
+   * Verified the custom legal warning banner prior to Windows logon (`GPO_09`).
+   * Confirmed immediate access denial when attempting to launch `CMD`, `Control Panel`, `PowerShell`, `Task Manager`, or open **CD/DVD** (`D:\`) and **USB** drives.
+   * Verified **BitLocker** drive encryption enforcement (`GPO_11`) and **Account Lockout** after 5 failed login attempts.
 2. **IT Support Elevation (`Fares-IT`):**
-   * Logged into `Windows10x64` (`192.168.20.25`) using `Fares-IT`; verified bypass of user restrictions and full Local Admin access (`CMD`, `Control Panel`, `gpresult /h`) without Domain Admin rights.
-3. **Web Server (IIS) Verification:**
-   * Successfully accessed the hosted web portal from Trust workstations (`http://172.16.10.30`) and validated external reachability through FortiGate **Virtual IP (VIP)** port forwarding on Port 80.
-4. **FTP Server Verification:**
-   * Authenticated successfully against the DMZ FTP service (`ftp://172.16.10.30` and via external VIP) and verified directory listing and file transfer operations across firewall zones.
-5. **SMB File Sharing Verification:**
-   * Accessed the network shared directory (`\\172.16.10.30`) from domain-joined clients (`Windows10x64`) and verified read/write permissions enforced via NTFS and Share ACLs.
-6. **Ubuntu Linux Client (`Ubuntu64`):**
-   * Verified IP configuration (`192.168.20.15`), gateway connectivity (`192.168.20.1`), DMZ service reachability (`172.16.10.30`), and external internet access via FortiGate SNAT.
+   * Logged into `Windows10x64` using `Fares-IT`; verified bypass of user restrictions and full Local Admin access (`cmd.exe` and gateway reachability) without Domain Admin rights.
+3. **DMZ Services & Internet Access Verification (`Windows 10` & `Ubuntu Linux`):**
+   * **Windows 10 Client:** Verified HTTP access to the **IIS Web Server** (`172.16.10.30/`), SMB network shares (`\\172.16.10.30\File_Share`), and outbound internet connectivity through FortiGate NAT.
+   * **Ubuntu Linux Client (`Ubuntu64`):** Verified cross-platform connectivity to the DMZ **FTP Server** (`ftp://ftp.dns.local`) and **SMB Windows File Shares** (`172.16.10.30` / `File_Share`).
 
 ### A. Endpoint Hardening & RBAC Verification
-| System Tools Blocked (`CMD` / `Control Panel`) | Removable Media Blocked (`DVD` / `USB`) |
+| Pre-Logon Security Banner (`GPO_09`) | System Tools Blocked (`Restrictions`) |
 | :---: | :---: |
-| ![System Tools Blocked](screenshots/10-win10-block-cmd-controlpanel.png) | ![DVD and USB Blocked](screenshots/11-win10-block-dvd-usb.png) |
+| ![Logon Banner](screenshots/08-win10-logon-banner.png) | ![System Tools Blocked](screenshots/09-win10-block-cmd-controlpanel.png) |
 
-| BitLocker Policy Verification (`GPO_11`) | IT Support Full Admin Access (`Fares-IT`) |
+| Removable Media Blocked (`CD/DVD` Access Denied) | BitLocker Drive Encryption (`GPO_11`) |
 | :---: | :---: |
-| ![BitLocker Verification](screenshots/12-bitlocker-verification.png) | ![IT Admin Access](screenshots/13-win10-it-admin-access.png) |
+| ![DVD and USB Blocked](screenshots/10-win10-block-dvd-usb.png) | ![BitLocker Verification](screenshots/11-bitlocker-verification.png) |
 
-### B. DMZ Services (Web, FTP, File Sharing) & Linux Client Verification
-| Web Server (`IIS` HTTP/VIP) Success | FTP Server Authentication & Transfer Success |
-| :---: | :---: |
-| ![Web Server Verification](screenshots/14-web-server-test.png) | ![FTP Server Verification](screenshots/15-ftp-server-test.png) |
+| IT Support Full Admin Access (`Fares-IT` CMD) |
+| :---: |
+| ![IT Admin Access](screenshots/12-win10-it-admin-access.png) |
 
-| SMB File Sharing (`\\172.16.10.30`) Success | Ubuntu Linux Connectivity (`192.168.20.15`) |
+### B. DMZ Services & Internet Connectivity Verification
+| Windows 10: IIS Web Server & SMB Share (`172.16.10.30`) | Windows 10: Outbound Internet Access (FortiGate NAT) |
 | :---: | :---: |
-| ![SMB File Sharing Verification](screenshots/16-smb-fileshare-test.png) | ![Ubuntu Connectivity](screenshots/17-ubuntu-connectivity.png) |
+| ![Windows 10 Web and SMB](screenshots/13-win10-web-and-smb.png) | ![Internet NAT Verification](screenshots/15-internet-nat-test.png) |
+
+| Ubuntu Linux: FTP Client (`ftp://ftp.dns.local`) | Ubuntu Linux: SMB File Share (`172.16.10.30`) |
+| :---: | :---: |
+| ![Ubuntu FTP Test](screenshots/14-ubuntu-ftp-test.png) | ![Ubuntu SMB File Share](screenshots/17-ubuntu-smb-fileshare.png) |
 
 ---
 
