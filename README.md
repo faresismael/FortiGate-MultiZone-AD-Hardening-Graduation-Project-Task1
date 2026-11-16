@@ -1,7 +1,7 @@
 # 🛡️ Enterprise Multi-Zone Network & Windows Server 2025 Security Hardening (Graduation Project - Task 1)
 
 ## 📌 Project Overview
-**Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **13 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints.
+**Task 1** of the **Automated Security Response System for Enterprise Networks** graduation project. This foundational phase builds and secures an enterprise-grade, multi-zone network architecture in **GNS3**, protected at the perimeter by a **FortiGate Next-Generation Firewall (NGFW)** with **Virtual IPs (DNAT)**, hosting core enterprise services (**AD DS, DNS, Web, FTP, and File Sharing**) in a segmented **DMZ**, and enforcing **14 Security Policies** alongside **Least-Privilege Role-Based Access Control (RBAC)** across **Windows 10** and **Ubuntu Linux** endpoints.
 
 ---
 
@@ -72,40 +72,44 @@ The DMZ server (`WindowsServer2025V2-1` — `172.16.10.30`) hosts core organizat
 
 ## 🏢 Active Directory Hierarchy & Privilege Separation (RBAC)
 
-Within **`faresismael.com`**, objects are organized under the root container **`ECE_Grad_Project`** across three dedicated Organizational Units (OUs):
+Within **`faresismael.com`**, objects are organized under the root container **`ECE_Grad_Project`** across four dedicated Organizational Units (OUs):
 
-![Active Directory OU Structure](screenshots/06-ad-ou-structure.png)
+![Active Directory OU Structure](screenshots/04-ad-ou-structure.png)
 
-1. **`Project_Team` (Standard Users):** Contains team/employee accounts (`fares`, `mina`, etc.) governed by strict endpoint restrictions.
-2. **`Project_Computers` (Workstations):** Contains domain-joined client machines (`Windows10x64`).
-3. **`IT_Department` (Technical Support):** Contains `IT_Support_Group` and dedicated IT admin accounts (`Fares-IT`, `ROIT`).
+1. **`Project_Team` (Standard Users):** Contains general employee accounts governed by strict endpoint restrictions.
+2. **`Project_Computers` (Workstations):** Contains domain-joined client machines (`Windows10x64` / `DESKTOP-8INU3L7`).
+3. **`IT_Department` (Technical Support):** Contains `IT_Support_Group` and dedicated IT admin accounts (`Fares Ismael (IT Admin)` and `Eng Arwa (IT Admin)`).
+4. **`Coders_Group` (Developers & Creative Designers):** Contains technical/design team members (`Esraa`, `Qusai`, `Mustafa`) who require local installation rights (fonts, creative suites, dev tools) while remaining restricted from altering network, USB, registry, or domain settings.
 
-### 🔐 Least-Privilege Administration (No `Domain Admins` Over-Privileging)
-To prevent privilege escalation and protect the Domain Controller, IT support accounts are explicitly excluded from `Domain Admins` and granted scoped permissions via two mechanisms:
-- **Delegation of Control:** Delegated authority exclusively on `Project_Team` OU, allowing `IT_Support_Group` to inspect user details (`Read all user information`) and reset employee passwords without accessing the Domain Controller.
-- **Restricted Groups (`GPO_12`):** Elevated `IT_Support_Group` to **Local Administrator** solely on `Project_Computers` workstations (while preserving `Domain Admins`), enabling full local maintenance without domain-level control.
+### 🔐 Least-Privilege Administration & Scoped Local Admin
+To prevent privilege escalation and protect the Domain Controller, non-domain-admin roles are governed through three granular access tiers:
+* **Delegation of Control (`IT_Support_Group`):** Delegated authority exclusively on `Project_Team` OU, allowing IT support staff to inspect user details and reset employee passwords without accessing the Domain Controller.
+* **Restricted Groups (`GPO_12`):** Grants `IT_Support_Group` and `Coders_Group` **Local Administrator** privileges on `Project_Computers` workstations (while preserving `Domain Admins`), enabling software/font installation and local maintenance without domain-level control.
+* **Policy-Scoped Local Admins (`Coders_Group` GPOs):** Even with Local Administrator access on their workstations, `Coders_Group` members remain bound by targeted User GPOs (`GPO_03`, `GPO_04`, `GPO_06`, `GPO_13`) that block NIC/IP tampering, USB data exfiltration, Registry edits, and leaving the domain.
 
-| Delegation of Control & Account Lockout | Restricted Groups (`Local Administrators`) |
+| Account Lockout Policy (`Default Domain Policy`) | Restricted Groups (`Local Administrators`) |
 | :---: | :---: |
-| ![Delegation and Lockout](screenshots/08-delegation-and-lockout.png) | ![Restricted Groups Configuration](screenshots/09-it-restricted-groups.png) |
-
+| ![Account Lockout Policy](screenshots/06-account-lockout.png) | ![Restricted Groups Configuration](screenshots/07-it-restricted-groups.png) |
 ---
 
-## 📜 Security Hardening Policies (12 GPOs + Domain Lockout)
+## 📜 Security Hardening Policies (13 GPOs + Domain Lockout)
 
-![Group Policy Management](screenshots/07-gpo-list.png)
+![Group Policy Management](screenshots/05-gpo-list.png)
 
-### A. User-Side Hardening (`Project_Team` OU)
-| GPO Name | Scope | Security Objective |
-| :--- | :--- | :--- |
-| **`GPO_01_Block_CMD`** | User | Disables Command Prompt (`cmd.exe`) and batch script execution. |
-| **`GPO_02_Block_Control_Panel`** | User | Blocks access to Control Panel and Windows Settings to prevent system tampering. |
-| **`GPO_03_Block_Network_Properties`** | User | Locks TCP/IP and NIC properties to prevent IP/DNS spoofing or firewall bypass. |
-| **`GPO_04_Block_USB_Storage`** | User | Denies read/write access to removable USB drives to prevent data exfiltration. |
-| **`GPO_05_Block_Task_Manager`** | User | Disables Task Manager to prevent users from terminating security/monitoring processes. |
-| **`GPO_06_Block_Registry`** | User | Blocks Registry Editor (`regedit.exe`) to protect core OS security keys. |
-| **`GPO_07_Block_CD_DVD`** | User | Restricts CD/DVD optical media access as an additional DLP layer. |
-| **`GPO_08_Block_PowerShell`** | User | Blocks Windows PowerShell execution to mitigate unauthorized scripting attacks. |
+### A. User-Side Hardening (`Project_Team` & `Coders_Group` OUs)
+| GPO Name | Target OU | Scope | Security Objective |
+| :--- | :--- | :--- | :--- |
+| **`GPO_01_Prevent_CMD`** | `Project_Team` | User | Disables Command Prompt (`cmd.exe`) and batch script execution. |
+| **`GPO_02_Block_Control_Panel`** | `Project_Team` | User | Blocks access to Control Panel and Windows Settings to prevent system tampering. |
+| **`GPO_03_Block_Network_Properties`** | `Project_Team` & `Coders_Group` | User | Locks TCP/IP and NIC properties to prevent IP/DNS spoofing or firewall bypass. |
+| **`GPO_04_Block_USB_Storage`** | `Project_Team` & `Coders_Group` | User | Denies read/write access to removable USB drives to prevent data exfiltration. |
+| **`GPO_05_Disable_Task_Manager`** | `Project_Team` | User | Disables Task Manager to prevent users from terminating security/monitoring processes. |
+| **`GPO_06_Disable_Registry_Editor`** | `Project_Team` & `Coders_Group` | User | Blocks Registry Editor (`regedit.exe`) to protect core OS security keys. |
+| **`GPO_07_Block_CD_DVD`** | `Project_Team` | User | Restricts CD/DVD optical media access as an additional DLP layer. |
+| **`GPO_08_Block_PowerShell`** | `Project_Team` | User | Blocks Windows PowerShell execution to mitigate unauthorized scripting attacks. |
+| **`GPO_13_Prevent_Leave_Domain`** | `Coders_Group` | User | Restricts Control Panel/System Settings for local-admin developers/designers so they cannot unjoin workstations from the domain. |
+
+![Coders Group Scoped GPOs](screenshots/16-coders-group-gpos.png)
 
 ### B. Computer-Side & Domain-Wide Policies
 | Policy Name | Target | Scope | Security Objective |
@@ -113,10 +117,10 @@ To prevent privilege escalation and protect the Domain Controller, IT support ac
 | **`GPO_09_Logon_Security_Banner`** | `Project_Computers` | Computer | Displays an authorized-use legal warning banner prior to Windows logon. |
 | **`GPO_10_Disk_Quota_5GB`** | `Project_Computers` | Computer | Enforces a strict **5 GB per-user NTFS disk quota** to prevent storage exhaustion. |
 | **`GPO_11_BitLocker_Encryption`** | `Project_Computers` | Computer | Configures BitLocker OS drive encryption policy (with non-TPM support for virtualized environments). |
-| **`GPO_12_IT_Local_Admin`** | `Project_Computers` | Computer | Grants `IT_Support_Group` Local Administrator rights on workstations via `Restricted Groups`. |
+| **`GPO_12_IT_Local_Admin`** | `Project_Computers` | Computer | Grants `IT_Support_Group` and `Coders_Group` Local Administrator rights on workstations via `Restricted Groups`. |
 | **`Account Lockout Policy`** | `Default Domain Policy` | Domain | Protects against brute-force attacks by locking accounts for **30 minutes** after **5 invalid logon attempts**. |
-
 ---
+
 
 ## ✅ End-to-End Testing & Verification
 
