@@ -125,27 +125,17 @@ All firewall rules, Virtual IPs, DMZ network services, outbound NAT, and GPO res
    * **Ubuntu Linux Client (`Ubuntu64`):** Verified cross-platform connectivity to the DMZ **FTP Server** (`ftp://ftp.dns.local`) and **SMB Windows File Shares** (`172.16.10.30` / `File_Share`).
 
 ### A. Endpoint Hardening & RBAC Verification
-| Pre-Logon Security Banner (`GPO_09`) | System Tools Blocked (`Restrictions`) |
+| Pre-Logon Security Banner (`GPO_09`) | BitLocker Drive Encryption (`GPO_11`) |
 | :---: | :---: |
-| ![Logon Banner](screenshots/08-win10-logon-banner.png) | ![System Tools Blocked](screenshots/09-win10-block-cmd-controlpanel.png) |
+| <img src="screenshots/08-win10-logon-banner.png" width="430" alt="Logon Banner"> | <img src="screenshots/11-bitlocker-verification.png" width="430" alt="BitLocker Verification"> |
 
-| Removable Media Blocked (`CD/DVD` Access Denied) | BitLocker Drive Encryption (`GPO_11`) |
+| System Tools Blocked (`Restrictions`) | Removable Media Blocked (`CD/DVD` Access Denied) |
 | :---: | :---: |
-| ![DVD and USB Blocked](screenshots/10-win10-block-dvd-usb.png) | ![BitLocker Verification](screenshots/11-bitlocker-verification.png) |
+| <img src="screenshots/09-win10-block-cmd-controlpanel.png" width="430" alt="System Tools Blocked"> | <img src="screenshots/10-win10-block-dvd-usb.png" width="430" alt="DVD and USB Blocked"> |
 
 | IT Support Full Admin Access (`Fares-IT` CMD) |
 | :---: |
-| ![IT Admin Access](screenshots/12-win10-it-admin-access.png) |
-
-### B. DMZ Services & Internet Connectivity Verification
-| Windows 10: IIS Web Server & SMB Share (`172.16.10.30`) | Windows 10: Outbound Internet Access (FortiGate NAT) |
-| :---: | :---: |
-| ![Windows 10 Web and SMB](screenshots/13-win10-web-and-smb.png) | ![Internet NAT Verification](screenshots/15-internet-nat-test.png) |
-
-| Ubuntu Linux: FTP Client (`ftp://ftp.dns.local`) | Ubuntu Linux: SMB File Share (`172.16.10.30`) |
-| :---: | :---: |
-| ![Ubuntu FTP Test](screenshots/14-ubuntu-ftp-test.png) | ![Ubuntu SMB File Share](screenshots/17-ubuntu-smb-fileshare.png) |
-
+| <img src="screenshots/12-win10-it-admin-access.png" width="750" alt="IT Admin Access"> |
 ---
 
 ## 🛠️ Tech Stack & Tools
