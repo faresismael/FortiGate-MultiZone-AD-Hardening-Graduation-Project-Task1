@@ -7,7 +7,7 @@
 
 ## 🏗️ Network Architecture & IP Addressing
 
-![GNS3 Multi-Zone Topology]([screenshots/01-gns3-topology.png](https://www.facebook.com/share/p/1CQE2bLzny/](https://github.com/faresismael/FortiGate-MultiZone-AD-Hardening-Graduation-Project-Task1/blob/main/Screenshots-G_Task%201/01-gns3-topology.png?raw=true))
+![GNS3 Multi-Zone Topology](screenshots/01-gns3-topology.png)
 
 The infrastructure is segmented into three isolated security zones governed by **FortiGate 7.4.12**:
 
