@@ -82,7 +82,7 @@ To prevent privilege escalation and protect the Domain Controller, non-domain-ad
 
 ---
 
-## 📜 Security Hardening Policies (13 GPOs + Domain Lockout)
+## 📜 Security Hardening Policies (15 GPOs + Domain Lockout)
 
 ![Group Policy Management](screenshots/05-gpo-list.png)
 
@@ -98,8 +98,16 @@ To prevent privilege escalation and protect the Domain Controller, non-domain-ad
 | **`GPO_07_Block_CD_DVD`** | `Project_Team` | User | Restricts CD/DVD optical media access as an additional DLP layer. |
 | **`GPO_08_Block_PowerShell`** | `Project_Team` | User | Blocks Windows PowerShell execution to mitigate unauthorized scripting attacks. |
 | **`GPO_13_Prevent_Leave_Domain`** | `Coders_Group` | User | Restricts Control Panel/System Settings for local-admin developers/designers so they cannot unjoin workstations from the domain. |
+| **`GPO_14_Hide_Drives_File_Explorer`** | `Project_Team` | User | Hides and blocks direct user browsing of local drive `C:\` in File Explorer. |
+| **`GPO_15_Disable_Folder_Options`** | `Project_Team` | User | Blocks Folder Options to prevent users from altering File Explorer view settings. |
 
 ![Coders Group Scoped GPOs](screenshots/16-coders-group-gpos.png)
+
+| Hide Local Drive C (`GPO_14`) | Prevent C Drive Access (`GPO_14`) |
+| :---: | :---: |
+| <img src="screenshots/35-gpo-hide-c-drive.png" width="430" alt="Hide C Drive"> | <img src="screenshots/36-gpo-prevent-c-drive-access.png" width="430" alt="Prevent C Drive Access"> |
+
+![GPO_15 Disable Folder Options](screenshots/38-gpo-disable-folder-options.png)
 
 ### B. Computer-Side & Domain-Wide Policies
 | Policy Name | Target | Scope | Security Objective |
@@ -134,6 +142,10 @@ All firewall rules, Virtual IPs, DMZ network services, outbound NAT, and GPO res
 | System Tools Blocked (`Restrictions`) | Removable Media Blocked (`CD/DVD` Access Denied) |
 | :---: | :---: |
 | <img src="screenshots/09-win10-block-cmd-controlpanel.png" width="430" alt="System Tools Blocked"> | <img src="screenshots/10-win10-block-dvd-usb.png" width="430" alt="DVD and USB Blocked"> |
+
+| Local Drive (C:\) Access Blocked (`GPO_14`) |
+| :---: |
+| <img src="screenshots/37-win10-c-drive-access-denied.png" width="430" alt="C Drive Access Denied"> |
 
 | IT Support Full Admin Access (`Fares-IT` CMD) |
 | :---: |
