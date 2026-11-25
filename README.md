@@ -103,9 +103,9 @@ To prevent privilege escalation and protect the Domain Controller, non-domain-ad
 
 ![Coders Group Scoped GPOs](screenshots/16-coders-group-gpos.png)
 
-| Hide Local Drive C (`GPO_14`) | Prevent C Drive Access (`GPO_14`) |
+| Local Drive C Hidden (`GPO_14`) | C Drive Access Blocked (`GPO_14`) |
 | :---: | :---: |
-| <img src="screenshots/35-gpo-hide-c-drive.png" width="430" alt="Hide C Drive"> | <img src="screenshots/36-gpo-prevent-c-drive-access.png" width="430" alt="Prevent C Drive Access"> |
+| <img src="screenshots/39-win10-c-drive-hidden.png" width="430" alt="C Drive Hidden"> | <img src="screenshots/40-win10-restrictions-dialog.png" width="430" alt="Restrictions Dialog"> |
 
 ![GPO_15 Disable Folder Options](screenshots/38-gpo-disable-folder-options.png)
 
