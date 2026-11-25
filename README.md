@@ -35,6 +35,8 @@ Strict stateful access control policies regulate all inter-zone communication ac
 
 ![FortiGate Firewall Policies](screenshots/02-fortigate-policies.png)
 
+![FortiGate Firewall Policies 2](screenshots/34-fortigate-policies2.png.jpg)
+
 ### 2. Virtual IP (VIP / DNAT Port Forwarding)
 To securely publish the DMZ-hosted Web Server to external clients without exposing the internal DMZ subnet (`172.16.10.0/24`), a **FortiGate Virtual IP (Static NAT)** was configured on `WAN (port1)`:
 
@@ -42,7 +44,7 @@ To securely publish the DMZ-hosted Web Server to external clients without exposi
 | :--- | :--- | :--- | :--- | :--- |
 | **`External to DMZ`** | `WAN (port1)` | `192.168.1.5` (`TCP: 80`) | `172.16.10.30` (`TCP: 80`) | Enterprise Web Server (IIS) |
 
-![FortiGate Virtual IPs](screenshots/03-fortigate-virtual-ips.png)
+![FortiGate Virtual IPs](screenshots/27-vip-external-to-dmz-port-forwarding.png)
 
 ---
 
